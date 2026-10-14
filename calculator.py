@@ -1,101 +1,58 @@
-import streamlit as st
+import customtkinter as ctk
+from PIL import Image  # تأكد من تثبيتها عبر: pip install pillow
 
-st.set_page_config(page_title="آلة حاسبة تفاعلية", page_icon="🧮")
+# إعداد المظهر العام للمكتبة (داكن)
+ctk.set_appearance_mode("dark")
+ctk.set_default_color_theme("blue")
 
-st.title("🧮 آلة حاسبة تفاعلية متكاملة")
+root = ctk.CTk()
+root.geometry("400x550")
+root.title("آلة حاسبة تفاعلية")
+root.configure(fg_color="#0b0e14") # لون الخلفية الداكن
 
-# تهيئة الذاكرة لحفظ العمليات الحسابية
-if "display" not in st.session_state:
-    st.session_state.display = ""
+# 1. تحميل الصورة الشفافة (PNG) وتحديد حجمها كعلامة مائية
+# تحكم في أبعاد الصورة (مثلاً 200x200) لتناسب نافذتك
+bg_image = ctk.CTkImage(
+    light_image=Image.open("your_logo.png"), # ضع مسار صورتك الشفافة هنا
+    dark_image=Image.open("your_logo.png"),
+    size=(200, 200)
+)
 
-# عرض شاشة الآلة الحاسبة
-display_val = st.text_input("الشاشة", value=st.session_state.display, disabled=True, label_visibility="collapsed")
+# 2. وضع الصورة كعلامة مائية في خلفية التطبيق باستخدام CTkLabel
+watermark = ctk.CTkLabel(root, image=bg_image, text="")
+watermark.place(relx=0.5, rely=0.5, anchor="center") 
 
-# وظيفة لإضافة الأرقام أو الرموز للشاشة
-def add_to_display(val):
-    st.session_state.display += str(val)
+# 3. إنشاء حاوية الأزرار (Frame) 
+# جعل خلفية الحاوية شفافة تماماً ("transparent") لتظهر العلامة المائية من خلفها
+grid_frame = ctk.CTkFrame(root, fg_color="transparent")
+grid_frame.place(relx=0.5, rely=0.6, anchor="center") # وضعها فوق العلامة المائية
 
-# وظيفة مسح الشاشة
-def clear_display():
-    st.session_state.display = ""
+# مصفوفة الأزرار
+buttons = [
+    ['AC', '(', '%', '÷'],
+    ['7', '8', '9', '×'],
+    ['4', '5', '6', '-'],
+    ['1', '2', '3', '+'],
+    ['0', '.', '⌫', '=']
+]
 
-# وظيفة حساب النتيجة
-def calculate():
-    try:
-        # استبدال الرموز لتعمل بلغة بايثون
-        expr = st.session_state.display.replace("×", "*").replace("÷", "/")
-        result = str(eval(expr))
-        st.session_state.display = result
-    except Exception:
-        st.session_state.display = "خطأ"
+# 4. توزيع الأزرار بشكل متلاصق تماماً
+for row_idx, row in enumerate(buttons):
+    for col_idx, text in enumerate(row):
+        btn = ctk.CTkButton(
+            master=grid_frame, 
+            text=text, 
+            width=70,
+            height=60,
+            font=("Arial", 16, "bold"),
+            fg_color="#1e222b",       # لون الأزرار الداكن
+            hover_color="#282c37",    # لون الزر عند تمرير الماوس
+            text_color="white",
+            corner_radius=0,          # 💡 السر هنا: الحواف حادة تماماً لتتلاحم الأزرار بدون أي فراغات دائرية
+            border_width=1,           # فاصل خفيف جداً بعرض 1 بكسل لحجم جمالي (اجعله 0 للاتصال المطلق)
+            border_color="#2d3139"    # لون خط الفاصل بين الأزرار المتلاصقة
+        )
+        # تصفير الهوامش الخارجية تماماً لضمان الالتصاق
+        btn.grid(row=row_idx, column=col_idx, padx=0, pady=0, sticky="nsew")
 
-# تصميم الأزرار على هيئة شبكة (Grid)
-col1, col2, col3, col4 = st.columns(4)
-
-with col1:
-    if st.button("AC"):
-        clear_display()
-        st.rerun()
-    if st.button("7"):
-        add_to_display("7")
-        st.rerun()
-    if st.button("4"):
-        add_to_display("4")
-        st.rerun()
-    if st.button("1"):
-        add_to_display("1")
-        st.rerun()
-    if st.button("0"):
-        add_to_display("0")
-        st.rerun()
-
-with col2:
-    if st.button("("):
-        add_to_display("(")
-        st.rerun()
-    if st.button("8"):
-        add_to_display("8")
-        st.rerun()
-    if st.button("5"):
-        add_to_display("5")
-        st.rerun()
-    if st.button("2"):
-        add_to_display("2")
-        st.rerun()
-    if st.button("."):
-        add_to_display(".")
-        st.rerun()
-
-with col3:
-    if st.button("%"):
-        add_to_display("/100")
-        st.rerun()
-    if st.button("9"):
-        add_to_display("9")
-        st.rerun()
-    if st.button("6"):
-        add_to_display("6")
-        st.rerun()
-    if st.button("3"):
-        add_to_display("3")
-        st.rerun()
-    if st.button("⌫"):
-        st.session_state.display = st.session_state.display[:-1]
-        st.rerun()
-
-with col4:
-    if st.button("÷"):
-        add_to_display("÷")
-        st.rerun()
-    if st.button("×"):
-        add_to_display("×")
-        st.rerun()
-    if st.button("-"):
-        add_to_display("-")
-        st.rerun()
-    if st.button("+"):
-        add_to_display("+")
-        st.rerun()
-    if st.button("="):
-        calculate()
-        st.rerun()
+root.mainloop()
