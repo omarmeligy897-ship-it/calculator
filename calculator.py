@@ -1,33 +1,64 @@
-import customtkinter as ctk
-from PIL import Image  # تأكد من تثبيتها عبر: pip install pillow
+import streamlit as st
 
-# إعداد المظهر العام للمكتبة (داكن)
-ctk.set_appearance_mode("dark")
-ctk.set_default_color_theme("blue")
+# إعدادات الصفحة
+st.set_page_config(page_title="آلة حاسبة تفاعلية", layout="centered")
 
-root = ctk.CTk()
-root.geometry("400x550")
-root.title("آلة حاسبة تفاعلية")
-root.configure(fg_color="#0b0e14") # لون الخلفية الداكن
+# إضافة تنسيق CSS لجعل الأزرار متلاصقة وإضافة علامة مائية في الخلفية
+st.markdown("""
+    <style>
+    /* تنسيق حاوية الآلة الحاسبة */
+    .calc-container {
+        max-width: 400px;
+        margin: 0 auto;
+        position: relative;
+        background-color: #0b0e14;
+        padding: 20px;
+        border-radius: 10px;
+    }
+    
+    /* إضافة العلامة المائية الشفافة في الخلفية */
+    .calc-container::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 200px;
+        height: 200px;
+        background-image: url('https://imgur.com'); /* ضع رابط صورتك الشفافة هنا */
+        background-size: contain;
+        background-repeat: no-repeat;
+        opacity: 0.15; /* درجة الشفافية */
+        pointer-events: none;
+    }
 
-# 1. تحميل الصورة الشفافة (PNG) وتحديد حجمها كعلامة مائية
-# تحكم في أبعاد الصورة (مثلاً 200x200) لتناسب نافذتك
-bg_image = ctk.CTkImage(
-    light_image=Image.open("your_logo.png"), # ضع مسار صورتك الشفافة هنا
-    dark_image=Image.open("your_logo.png"),
-    size=(200, 200)
-)
+    /* إلغاء المسافات بين الأزرار في Streamlit */
+    div[data-testid="stHorizontalBlock"] {
+        gap: 0px !important;
+    }
+    
+    /* تنسيق أزرار الستريم ليت لتكون متلاصقة ومسطحة */
+    button {
+        border-radius: 0px !important;
+        border: 1px solid #2d3139 !important;
+        background-color: #1e222b !important;
+        color: white !important;
+        width: 100% !important;
+        height: 60px !important;
+    }
+    button:hover {
+        background-color: #282c37 !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
-# 2. وضع الصورة كعلامة مائية في خلفية التطبيق باستخدام CTkLabel
-watermark = ctk.CTkLabel(root, image=bg_image, text="")
-watermark.place(relx=0.5, rely=0.5, anchor="center") 
+# هيكل الآلة الحاسبة
+st.markdown('<div class="calc-container">', unsafe_allow_html=True)
 
-# 3. إنشاء حاوية الأزرار (Frame) 
-# جعل خلفية الحاوية شفافة تماماً ("transparent") لتظهر العلامة المائية من خلفها
-grid_frame = ctk.CTkFrame(root, fg_color="transparent")
-grid_frame.place(relx=0.5, rely=0.6, anchor="center") # وضعها فوق العلامة المائية
+# شاشة العرض
+st.text_input("", placeholder="0", key="display", label_visibility="collapsed")
 
-# مصفوفة الأزرار
+# مصفوفة الأزرار المتلاصقة بالتوزيع الشبكي لـ Streamlit
 buttons = [
     ['AC', '(', '%', '÷'],
     ['7', '8', '9', '×'],
@@ -36,23 +67,10 @@ buttons = [
     ['0', '.', '⌫', '=']
 ]
 
-# 4. توزيع الأزرار بشكل متلاصق تماماً
-for row_idx, row in enumerate(buttons):
-    for col_idx, text in enumerate(row):
-        btn = ctk.CTkButton(
-            master=grid_frame, 
-            text=text, 
-            width=70,
-            height=60,
-            font=("Arial", 16, "bold"),
-            fg_color="#1e222b",       # لون الأزرار الداكن
-            hover_color="#282c37",    # لون الزر عند تمرير الماوس
-            text_color="white",
-            corner_radius=0,          # 💡 السر هنا: الحواف حادة تماماً لتتلاحم الأزرار بدون أي فراغات دائرية
-            border_width=1,           # فاصل خفيف جداً بعرض 1 بكسل لحجم جمالي (اجعله 0 للاتصال المطلق)
-            border_color="#2d3139"    # لون خط الفاصل بين الأزرار المتلاصقة
-        )
-        # تصفير الهوامش الخارجية تماماً لضمان الالتصاق
-        btn.grid(row=row_idx, column=col_idx, padx=0, pady=0, sticky="nsew")
+for row in buttons:
+    cols = st.columns(4)
+    for idx, text in enumerate(row):
+        with cols[idx]:
+            st.button(text, key=f"btn_{text}_{row.index(text)}")
 
-root.mainloop()
+st.markdown('</div>', unsafe_allow_html=True)
